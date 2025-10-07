@@ -4,16 +4,13 @@
   "type": "module",
   "main": "server.js",
   "scripts": {
-    "start": "node server.js",
-    "postinstall": "npx puppeteer browsers install chromium"
+    "start": "node server.js"
   },
   "dependencies": {
+    "@sparticuz/chromium-min": "^123.0.1",
     "body-parser": "^1.20.3",
     "cors": "^2.8.5",
     "express": "^4.19.2",
-    "puppeteer": "^23.1.1"
-  },
-  "puppeteer": {
-    "default_browser": "chromium"
+    "puppeteer-core": "^23.3.0"
   }
 }
