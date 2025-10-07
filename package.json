@@ -11,5 +11,8 @@
     "cors": "^2.8.5",
     "express": "^4.19.2",
     "puppeteer": "^23.1.1"
+  },
+  "puppeteer": {
+    "default_browser": "chromium"
   }
 }
