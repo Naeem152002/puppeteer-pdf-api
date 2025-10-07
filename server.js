@@ -1,6 +1,6 @@
 import express from "express";
-import chromium from "@sparticuz/chromium-min";
 import puppeteer from "puppeteer-core";
+import chromium from "@sparticuz/chromium-min";
 import cors from "cors";
 import bodyParser from "body-parser";
 
@@ -8,8 +8,13 @@ const app = express();
 app.use(cors());
 app.use(bodyParser.json({ limit: "50mb" }));
 
+app.get("/", (req, res) => {
+  res.send("✅ Puppeteer PDF API (Chromium-min) is running");
+});
+
 app.post("/generate-pdf", async (req, res) => {
   const { html, title } = req.body;
+
   if (!html) return res.status(400).json({ error: "HTML missing" });
 
   try {
@@ -25,13 +30,6 @@ app.post("/generate-pdf", async (req, res) => {
     const page = await browser.newPage();
     await page.setContent(html, { waitUntil: "networkidle0" });
     await page.waitForTimeout(500);
-
-    await page.addStyleTag({
-      content: `
-        * { page-break-inside: avoid !important; break-inside: avoid !important; }
-        img, li, div, p { page-break-inside: avoid !important; }
-      `,
-    });
 
     const pdfBuffer = await page.pdf({
       format: "A4",
@@ -52,5 +50,5 @@ app.post("/generate-pdf", async (req, res) => {
   }
 });
 
-app.get("/", (_, res) => res.send("✅ Puppeteer PDF API (Chromium-min) is running"));
-app.listen(5000, () => console.log("🚀 Server running on port 5000"));
+const PORT = process.env.PORT || 5000;
+app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
