@@ -29,7 +29,8 @@ app.post("/generate-pdf", async (req, res) => {
 
     const page = await browser.newPage();
 
-    await page.setContent(html, { waitUntil: "networkidle0" });
+   await page.waitForTimeout(1000); // wait 1s to ensure images/CSS loaded
+
 
     // Add global anti-cut rule
     await page.addStyleTag({
