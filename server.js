@@ -13,26 +13,28 @@ app.post("/generate-pdf", async (req, res) => {
   if (!html) return res.status(400).json({ error: "HTML missing" });
 
   try {
-   const browser = await puppeteer.launch({
-  headless: true,
-  args: [
-    "--no-sandbox",
-    "--disable-setuid-sandbox",
-    "--disable-dev-shm-usage",
-    "--single-process",
-    "--no-zygote",
-    "--disable-gpu",
-    "--disable-software-rasterizer"
-  ],
-});
-
+    const browser = await puppeteer.launch({
+      headless: true,
+      args: [
+        "--no-sandbox",
+        "--disable-setuid-sandbox",
+        "--disable-dev-shm-usage",
+        "--single-process",
+        "--no-zygote",
+        "--disable-gpu",
+        "--disable-software-rasterizer",
+      ],
+    });
 
     const page = await browser.newPage();
 
-   await page.waitForTimeout(1000); // wait 1s to ensure images/CSS loaded
+    // ✅ this was missing — set the HTML first!
+    await page.setContent(html, { waitUntil: "networkidle0" });
 
+    // ✅ small delay to ensure images/fonts load
+    await page.waitForTimeout(1000);
 
-    // Add global anti-cut rule
+    // ✅ anti-cut rule
     await page.addStyleTag({
       content: `
         * { page-break-inside: avoid !important; break-inside: avoid !important; }
@@ -56,7 +58,10 @@ app.post("/generate-pdf", async (req, res) => {
     });
   } catch (err) {
     console.error("PDF generation failed", err);
-    res.status(500).json({ error: "Failed to generate PDF" });
+    res.status(500).json({
+      error: "Failed to generate PDF",
+      details: err.message,
+    });
   }
 });
 
