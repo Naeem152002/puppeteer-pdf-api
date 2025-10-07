@@ -1,5 +1,5 @@
 import express from "express";
-import puppeteer from "puppeteer";
+import puppeteer, { executablePath } from "puppeteer"; // ✅ import executablePath
 import cors from "cors";
 import bodyParser from "body-parser";
 
@@ -15,6 +15,7 @@ app.post("/generate-pdf", async (req, res) => {
   try {
     const browser = await puppeteer.launch({
       headless: true,
+      executablePath: executablePath(), // ✅ use internal Chromium instead of system Chrome
       args: [
         "--no-sandbox",
         "--disable-setuid-sandbox",
@@ -28,13 +29,9 @@ app.post("/generate-pdf", async (req, res) => {
 
     const page = await browser.newPage();
 
-    // ✅ this was missing — set the HTML first!
     await page.setContent(html, { waitUntil: "networkidle0" });
+    await page.waitForTimeout(1000); // wait 1 second to load all assets
 
-    // ✅ small delay to ensure images/fonts load
-    await page.waitForTimeout(1000);
-
-    // ✅ anti-cut rule
     await page.addStyleTag({
       content: `
         * { page-break-inside: avoid !important; break-inside: avoid !important; }
@@ -57,7 +54,7 @@ app.post("/generate-pdf", async (req, res) => {
       file: pdfBuffer.toString("base64"),
     });
   } catch (err) {
-    console.error("PDF generation failed", err);
+    console.error("❌ PDF generation failed:", err);
     res.status(500).json({
       error: "Failed to generate PDF",
       details: err.message,
@@ -67,4 +64,4 @@ app.post("/generate-pdf", async (req, res) => {
 
 app.get("/", (req, res) => res.send("✅ Puppeteer PDF API is running"));
 
-app.listen(5000, () => console.log("🚀 Running on port 5000"));
+app.listen(5000, () => console.log("🚀 Server running on port 5000"));
